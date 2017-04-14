@@ -5,14 +5,7 @@ import L from 'leaflet';
 import './App.css';
 
 class App extends React.Component {
-    constructor(props) {
-        super(props);
-
-        this.mapClickHandler = this.mapClickHandler.bind(this);
-        this.hexClickHandler = this.hexClickHandler.bind(this);
-    }
-
-    mapClickHandler(e) {
+    componentDidMount() {
         let map = this.refs.map.leafletElement;
 
         let mapBounds = map.getBounds();
@@ -29,19 +22,17 @@ class App extends React.Component {
         let hexGrid = turf.hexGrid(bbox, cellSize, units);
 
         hexGrid.features.forEach(feature => {
-            let points = feature.geometry.coordinates[0].map(point => [point[1], point[0],]);
+            let hexPoints = feature.geometry.coordinates[0].map(point => [point[1], point[0],]);
+            let hex = L.polygon(hexPoints);
 
-            L.polygon(points).addTo(map);
+            hex.on('click', e => {
+                e.target.setStyle({
+                    color: 'red',
+                });
+                e.target.bringToFront();
+            });
+            hex.addTo(map);
         });
-    }
-
-    hexClickHandler(e) {
-        console.log(`
-            Click Coordinates:
-            -------------------------------
-            Latitude: ${e.latlng.lat}
-            Longitude: ${e.latlng.lng}
-        `);
     }
 
     render() {
@@ -50,13 +41,11 @@ class App extends React.Component {
                 ref={'map'}
                 center={[48.82404503, -114.11705017,]}
                 zoom={11}
-                onClick={this.mapClickHandler}
             >
                 <TileLayer
                     url={'http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'}
                     attribution={'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'}
                 />
-                { this.props.hexes }
             </Map>
         );
     }
