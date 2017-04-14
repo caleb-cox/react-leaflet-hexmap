@@ -7,10 +7,6 @@ import './App.css';
 class App extends React.Component {
     constructor(props) {
         super(props);
-        
-        this.state = {
-            hexes: [],
-        };
 
         this.mapClickHandler = this.mapClickHandler.bind(this);
         this.hexClickHandler = this.hexClickHandler.bind(this);
@@ -20,21 +16,23 @@ class App extends React.Component {
         let map = this.refs.map.leafletElement;
 
         let mapBounds = map.getBounds();
+
         let bbox = [
-            mapBounds._southWest.lat,
             mapBounds._southWest.lng,
-            mapBounds._northEast.lat,
+            mapBounds._southWest.lat,
             mapBounds._northEast.lng,
+            mapBounds._northEast.lat,
         ];
+
         let cellSize = 6;
         let units = 'miles';
         let hexGrid = turf.hexGrid(bbox, cellSize, units);
 
         hexGrid.features.forEach(feature => {
-            L.polygon(feature.geometry.coordinates[0]).addTo(map);
-        });
+            let points = feature.geometry.coordinates[0].map(point => [point[1], point[0],]);
 
-        // This works exactly as expected, but due to Mercator projects on map, there's distortion!
+            L.polygon(points).addTo(map);
+        });
     }
 
     hexClickHandler(e) {
